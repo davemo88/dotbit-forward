@@ -18,9 +18,6 @@ RUN mkdir -p ~/.namecoin \
 
 WORKDIR /data/namecoin
     
-# Setting data directory
-VOLUME [ "/data/data" ]
-
 # Adding entrypoint
 COPY ./docker-entrypoint.sh /
 
@@ -29,6 +26,7 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Setting Entrypoit
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
+
 
 # Setting default Environment Variables
 ENV NAMECOIN_DBCACHE=400
