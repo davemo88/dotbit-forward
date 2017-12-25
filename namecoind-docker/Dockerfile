@@ -11,9 +11,10 @@ RUN mkdir -p /data/namecoin /data/data && \
 
 # Configuring Namecoin Daemon
 RUN mkdir -p ~/.namecoin \
-    && echo "rpcuser=`whoami`" >> ~/.namecoin/namecoin.conf \
-    && echo "rpcpassword=`openssl rand -hex 30/`" >> ~/.namecoin/namecoin.conf \
+    && echo "rpcuser=rpcuser" >> ~/.namecoin/namecoin.conf \
+    && echo "rpcpassword=tacos" >> ~/.namecoin/namecoin.conf \
     && echo "rpcport=8336" >> ~/.namecoin/namecoin.conf \
+    && echo "rpcallowip=0.0.0.0/0" >> ~/.namecoin/namecoin.conf \
     && cat ~/.namecoin/namecoin.conf
 
 WORKDIR /data/namecoin
