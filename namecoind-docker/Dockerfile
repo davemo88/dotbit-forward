@@ -31,4 +31,6 @@ ENTRYPOINT [ "/docker-entrypoint.sh" ]
 # Setting default Environment Variables
 ENV NAMECOIN_DBCACHE=400
 
+EXPOSE 8336 8334
+
 CMD [ "namecoind", "--help" ]
