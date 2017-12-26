@@ -6,9 +6,18 @@ import (
 //  "strings"
   "bytes"
   "io/ioutil"
+  "encoding/json"
 )
 
 const NAMECOIND_HOST = "http://127.0.0.1:8336"
+
+type nameValue map[string]string
+
+type rpcResponse struct {
+  Result        []nameValue `json:"result"`
+  Id            string `json:"id"`
+  Error         string `json:"error"`
+}
 
 func DotBitForward(w http.ResponseWriter, r *http.Request) {
 //  domainParts := strings.Split(r.Host, ".")
@@ -24,7 +33,11 @@ func DotBitForward(w http.ResponseWriter, r *http.Request) {
     panic(err)
   }
   body, _ := ioutil.ReadAll(resp.Body)
-  fmt.Fprintf(w,string(body))
+  fmt.Fprintln(w, string(body))
+  var data rpcResponse
+  _ = json.Unmarshal(body, &data)
+  fmt.Fprintln(w, data.Result[0]["value"])
+//  http.Redirect(w,r,"http://google.com",301)
 }
 
 func main() {
