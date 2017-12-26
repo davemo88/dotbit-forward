@@ -3,21 +3,21 @@ package main
 import (
   "fmt"
   "net/http"
-  "strings"
+//  "strings"
   "bytes"
   "io/ioutil"
 )
 
-const NAMECOIND_HOST = "http://0.0.0.0:8336"
+const NAMECOIND_HOST = "http://127.0.0.1:8336"
 
 type Subdomains map[string]http.Handler
 func (subdomains Subdomains) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-  domain_parts := strings.Split(r.Host, ".")
-  fmt.Fprintf(w, domain_parts[0])
-  jsonStr := []byte(`{"jsonrpc":"1.0","id":"gotext","method":"getinfo","params":[]}`)
-  req, err := http.NewRequest("POST", NAMECOIND_HOST, bytes.NewBuffer(jsonStr))
+//  domainParts := strings.Split(r.Host, ".")
+  domainParts := [2]string{"hg", "taco"}
+  jsonStr := fmt.Sprintf(`{"jsonrpc":"1.0","id":"gotext","method":"name_filter","params":["^d/%v$"]}`, domainParts[0])
+  req, err := http.NewRequest("POST", NAMECOIND_HOST, bytes.NewBuffer([]byte(jsonStr)))
   req.Header.Add("content-type","text/plain")
+  req.SetBasicAuth("rpcuser","tacos")
 
   client := &http.Client{}
   resp, err := client.Do(req)
@@ -27,7 +27,6 @@ func (subdomains Subdomains) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   body, _ := ioutil.ReadAll(resp.Body)
   fmt.Fprintf(w,string(body))
 }
-
 
 func main() {
     subdomains := make(Subdomains)
