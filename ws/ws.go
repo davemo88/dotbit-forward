@@ -10,8 +10,7 @@ import (
 
 const NAMECOIND_HOST = "http://127.0.0.1:8336"
 
-type Subdomains map[string]http.Handler
-func (subdomains Subdomains) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func DotBitForward(w http.ResponseWriter, r *http.Request) {
 //  domainParts := strings.Split(r.Host, ".")
   domainParts := [2]string{"hg", "taco"}
   jsonStr := fmt.Sprintf(`{"jsonrpc":"1.0","id":"gotext","method":"name_filter","params":["^d/%v$"]}`, domainParts[0])
@@ -29,6 +28,6 @@ func (subdomains Subdomains) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    subdomains := make(Subdomains)
-    http.ListenAndServe(":8080", subdomains)
+    http.HandleFunc("/", DotBitForward)
+    http.ListenAndServe(":8080", nil)
 }
