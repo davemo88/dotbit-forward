@@ -1,24 +1,27 @@
 FROM debian:stretch
 
-RUN apt-get update \
-  && apt-get install -y \
-  wget \ 
-  make \
-  autoconf \
-  pkg-config \
-  bsdmainutils \
-  g++ \
-  libtool \
-  libssl-dev \
-  libboost-dev \
-  libboost-system-dev \
-  libboost-filesystem-dev \
-  libboost-program-options-dev \
-  libboost-thread-dev \
-  libboost-test-dev \
-  libevent-dev
+RUN apt-get update && apt-get install -y \
+    wget \ 
+    make \
+    autoconf \
+    pkg-config \
+    bsdmainutils \
+    g++ \
+    libtool \
+    libssl-dev \
+    libboost-dev \
+    libboost-system-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-thread-dev \
+    libboost-test-dev \
+    libevent-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/namecoin/namecoin-core/archive/nc0.13.0rc1.tar.gz \
+ENV SOURCE="https://github.com/namecoin/namecoin-core/archive/nc0.13.0rc1.tar.gz"
+
+
+RUN wget $SOURCE \
   && tar -xzf nc0.13.0rc1.tar.gz \
   && cd namecoin-core-nc0.13.0rc1/ \
   && ./autogen.sh \
@@ -36,10 +39,7 @@ USER nmcd
 
 ADD entrypoint.sh ./
 
-ENV RPCUSER="rpcuser"
-ENV RPCPASSWORD="tacos"
 ENV RPCPORT="8336"
-ENV RPCALLOWIP="0.0.0.0/0"
 ENV DATADIR="/home/nmcd/.namecoin"
 
 #ENTRYPOINT [ "entrypoint.sh" ]

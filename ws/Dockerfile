@@ -4,8 +4,10 @@ RUN useradd -m gows
 
 WORKDIR /home/gows
 
-ADD ws.go
+ADD ws.go ./
 
 RUN go build ws.go
 
-ENTRYPOINT ws
+ENV NMCD_HOST = "http://127.0.0.1:8336"
+
+ENTRYPOINT ./ws

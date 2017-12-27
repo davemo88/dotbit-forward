@@ -3,13 +3,14 @@ package main
 import (
   "fmt"
   "net/http"
-//  "strings"
+  "strings"
   "bytes"
   "io/ioutil"
   "encoding/json"
+  "os"
 )
 
-const NAMECOIND_HOST = "http://127.0.0.1:8336"
+const NMCD_HOST = os.Getenv("NMCD_HOST")
 
 type stringMap map[string]string
 
@@ -33,12 +34,25 @@ func dotBitForward(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDotBitDomain(requestHost string) (string, string) {
-  return "", "2ez"
+  domainParts := strings.Split(requestHost, ".")
+  var dotBitSubdomain, dotBitDomain string
+  switch {
+    case len(domainParts) == 2:
+      dotBitSubdomain = ""
+      dotBitDomain = domainParts[0]
+    case len(domainParts) == 3:
+      dotBitSubdomain = domainParts[0]
+      dotBitDomain = domainParts[1]
+    default:
+      dotBitSubdomain = ""
+      dotBitDomain = ""
+  }
+  return dotBitSubdomain, dotBitDomain
 }
 
 func getRpcRequest(dotBitDomain string) *http.Request {
   jsonStr := fmt.Sprintf(`{"jsonrpc":"1.0","id":"gotext","method":"name_filter","params":["^d/%v$"]}`, dotBitDomain)
-  req, _ := http.NewRequest("POST", NAMECOIND_HOST, bytes.NewBuffer([]byte(jsonStr)))
+  req, _ := http.NewRequest("POST", NMCD_HOST, bytes.NewBuffer([]byte(jsonStr)))
   req.Header.Add("content-type","text/plain")
   req.SetBasicAuth("rpcuser","tacos")
   return req
@@ -90,7 +104,6 @@ func hasKey(m stringMap, s string) bool {
   _, ok := m[s]
   return ok
 }
-
 
 func main() {
     http.HandleFunc("/", dotBitForward)
