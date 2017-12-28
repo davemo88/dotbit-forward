@@ -25,7 +25,6 @@ func dotBitForward(w http.ResponseWriter, r *http.Request) {
   req := getRpcRequest(dotBitDomain)
   client := &http.Client{}
   resp, err := client.Do(req)
-  fmt.Fprintln(w, resp)
   if err != nil {
     panic(err)
   }
@@ -53,18 +52,16 @@ func getDotBitDomain(requestHost string) (string, string) {
 
 func getRpcRequest(dotBitDomain string) *http.Request {
   jsonStr := fmt.Sprintf(`{"jsonrpc":"1.0","id":"gotext","method":"name_filter","params":["^d/%v$"]}`, dotBitDomain)
-  req, _ := http.NewRequest("POST","http://172.17.0.2:8336", bytes.NewBuffer([]byte(jsonStr)))
+  req, _ := http.NewRequest("POST", os.Getenv("NMCD_HOST"), bytes.NewBuffer([]byte(jsonStr)))
   req.Header.Add("content-type","text/plain")
-  req.SetBasicAuth(os.Getenv("NMCD_ENV_RPCUSER"),os.Getenv("NMCD_END_RPCPASSWORD"))
+  req.SetBasicAuth(os.Getenv("RPCUSER"),os.Getenv("RPCPASSWORD"))
   return req
 }
 
 func getDotBitRecord(resp *http.Response) stringMap{
   body, _ := ioutil.ReadAll(resp.Body)
-//  fmt.Fprintln(w, string(body))
   var data rpcResponse
   _ = json.Unmarshal(body, &data)
-//  fmt.Fprintln(w, data.Result[0]["value"])
 
   var dotBitRecord stringMap
 // why is Result an array

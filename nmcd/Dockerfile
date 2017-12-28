@@ -42,4 +42,4 @@ ADD entrypoint.sh ./
 ENV RPCPORT="8336"
 ENV DATADIR="/home/nmcd/.namecoin"
 
-#ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]

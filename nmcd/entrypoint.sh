@@ -1,14 +1,19 @@
 #!/bin/bash
-if [[ -z $DATADIR || -z $RPCUSER || -z $RPCPASSWORD || -z $RPCALLOWIP ]]; then
-  echo "set all env: DATADIR RPCUSER RPCPASSWORD RPCALLOWIP"
+
+if [[ -z $DATADIR || -z $RPCUSER || -z $RPCPASSWORD ]]; then
+  echo "set all env: DATADIR RPCUSER RPCPASSWORD"
   exit 1
 fi
 
-mkdir -p $DATADIR
+RPCALLOWIP=$(getent ahosts ws | tail -1 | awk '{ print $1 }')
+
 nmcconf=/home/nmcd/namecoin.conf
-echo "rpcuser=$RPCUSER" >> $nmcconf
-echo "rpcpassword=$RPCPASSWORD" >> $nmcconf
-echo "rpcport=$RPCPORT" >> $nmcconf
-echo "rpcallowip=$RPCALLOWIP" >> $nmcconf
+if [ ! -f $nmcconf ]; then
+  mkdir -p $DATADIR
+  echo "rpcuser=$RPCUSER" >> $nmcconf
+  echo "rpcpassword=$RPCPASSWORD" >> $nmcconf
+  echo "rpcport=$RPCPORT" >> $nmcconf
+  echo "rpcallowip=$RPCALLOWIP" >> $nmcconf
+fi
 
 namecoind -datadir=$DATADIR -conf=$nmcconf
