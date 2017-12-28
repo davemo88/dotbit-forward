@@ -4,6 +4,7 @@ services:
     container_name: nmcd
     build:
       context: ./nmcd
+    image: davemo88/dbf-nmcd
     volumes:
       - /home/hg/nmchain/:/home/nmcd/.namecoin
     environment:
@@ -14,6 +15,7 @@ services:
     container_name: ws
     build:
       context: ./ws
+    image: davemo88/dbf-ws
     ports:
       - "80:8080"
     environment:
