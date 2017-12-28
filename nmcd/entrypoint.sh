@@ -8,7 +8,7 @@ fi
 RPCALLOWIP=$(getent ahosts ws | tail -1 | awk '{ print $1 }')
 
 nmcconf=/home/nmcd/namecoin.conf
-if [ ! -f $nmcconf ]; then
+if [ -f $nmcconf ]; then
   mkdir -p $DATADIR
   echo "rpcuser=$RPCUSER" >> $nmcconf
   echo "rpcpassword=$RPCPASSWORD" >> $nmcconf
