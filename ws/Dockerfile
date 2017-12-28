@@ -8,6 +8,6 @@ ADD ws.go ./
 
 RUN go build ws.go
 
-ENV NMCD_HOST = "http://127.0.0.1:8336"
+#ENV NMCD_HOST = "http://127.0.0.1:8336"
 
 ENTRYPOINT ./ws

@@ -10,7 +10,7 @@ import (
   "os"
 )
 
-const NMCD_HOST = os.Getenv("NMCD_HOST")
+const NMCD_LINKNAME = "NMCD"
 
 type stringMap map[string]string
 
@@ -25,6 +25,7 @@ func dotBitForward(w http.ResponseWriter, r *http.Request) {
   req := getRpcRequest(dotBitDomain)
   client := &http.Client{}
   resp, err := client.Do(req)
+  fmt.Fprintln(w, resp)
   if err != nil {
     panic(err)
   }
@@ -45,16 +46,16 @@ func getDotBitDomain(requestHost string) (string, string) {
       dotBitDomain = domainParts[1]
     default:
       dotBitSubdomain = ""
-      dotBitDomain = ""
+      dotBitDomain = "2ez"
   }
   return dotBitSubdomain, dotBitDomain
 }
 
 func getRpcRequest(dotBitDomain string) *http.Request {
   jsonStr := fmt.Sprintf(`{"jsonrpc":"1.0","id":"gotext","method":"name_filter","params":["^d/%v$"]}`, dotBitDomain)
-  req, _ := http.NewRequest("POST", NMCD_HOST, bytes.NewBuffer([]byte(jsonStr)))
+  req, _ := http.NewRequest("POST","http://172.17.0.2:8336", bytes.NewBuffer([]byte(jsonStr)))
   req.Header.Add("content-type","text/plain")
-  req.SetBasicAuth("rpcuser","tacos")
+  req.SetBasicAuth(os.Getenv("NMCD_ENV_RPCUSER"),os.Getenv("NMCD_END_RPCPASSWORD"))
   return req
 }
 
@@ -67,7 +68,9 @@ func getDotBitRecord(resp *http.Response) stringMap{
 
   var dotBitRecord stringMap
 // why is Result an array
+  if len(data.Result) > 0 {
   _ = json.Unmarshal([]byte(data.Result[0]["value"]), &dotBitRecord)
+  }
 
   return dotBitRecord
 }
@@ -78,7 +81,7 @@ func getRedirectIp(dotBitRecord stringMap, dotBitSubdomain string) string {
   switch {
   case dotBitSubdomain == "" && hasKey(dotBitRecord, "ip"):
     redirectIp = dotBitRecord["ip"]
-  case dotBitSubdomain == "" && hasKey(dotBitRecord, "map"):
+  case dotBitSubdomain != "" && hasKey(dotBitRecord, "map"):
     redirectIp = getIpFromMap(dotBitRecord["map"], dotBitSubdomain)
   case hasKey(dotBitRecord, "ns"):
 //    nameservers := dotBitRecord["ns"]
@@ -92,9 +95,12 @@ func getIpFromMap(mapVal string, subdomain string) string {
   var m stringMap
   _ = json.Unmarshal([]byte(mapVal), &m)
   var ip string
-  if hasKey(m, subdomain) {
+  switch {
+  case hasKey(m, subdomain):
     ip = m[subdomain]
-  } else {
+  case hasKey(m, "*"):
+    ip = m["*"]
+  default:
     ip = ""
   }
   return ip
