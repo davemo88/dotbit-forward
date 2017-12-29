@@ -10,8 +10,6 @@ import (
   "os"
 )
 
-const DEFAULT_REDIRECT="butey.com"
-
 type stringMap map[string]string
 
 type rpcResponse struct {

@@ -1,8 +1,12 @@
 FROM golang:latest
 
-RUN useradd -m gows
+RUN useradd -m ws
 
-WORKDIR /home/gows
+WORKDIR /home/ws
+
+ENV RPCUSER
+ENV RPCPASSWORD
+ENV RPCPORT
 
 ADD ws.go ./
 
