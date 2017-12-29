@@ -68,6 +68,7 @@ func getDotBitRecord(resp *http.Response) stringMap{
   if len(data.Result) > 0 {
   _ = json.Unmarshal([]byte(data.Result[0]["value"]), &dotBitRecord)
   }
+  fmt.Println(data)
 
   return dotBitRecord
 }
