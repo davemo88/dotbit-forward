@@ -10,7 +10,7 @@ import (
   "os"
 )
 
-const NMCD_LINKNAME = "NMCD"
+const DEFAULT_REDIRECT="butey.com"
 
 type stringMap map[string]string
 
@@ -22,25 +22,33 @@ type rpcResponse struct {
 
 func dotBitForward(w http.ResponseWriter, r *http.Request) {
   dotBitSubdomain, dotBitDomain := getDotBitDomain(r.Host)
+  fmt.Printf("%s => %s, %s\n", r.Host, dotBitSubdomain, dotBitDomain)
   req := getRpcRequest(dotBitDomain)
   client := &http.Client{}
   resp, err := client.Do(req)
   if err != nil {
     panic(err)
   }
-  dotBitRecord := getDotBitRecord(resp)
+  data, dotBitRecord := getDotBitRecord(resp)
   redirectIp := getRedirectIp(dotBitRecord, dotBitSubdomain)
-  http.Redirect(w, r, redirectIp, 303)
+  if len(redirectIp) > 0 {
+    redirectDest := fmt.Sprintf("http://%s", redirectIp)
+    fmt.Println("redirecting to", redirectDest)
+    http.Redirect(w, r, redirectDest, 303)
+  } else {
+    fmt.Fprintln(w, "no dice, got", data.Result)
+  }
+
 }
 
 func getDotBitDomain(requestHost string) (string, string) {
   domainParts := strings.Split(requestHost, ".")
   var dotBitSubdomain, dotBitDomain string
   switch {
-    case len(domainParts) == 2:
+    case len(domainParts) == 3:
       dotBitSubdomain = ""
       dotBitDomain = domainParts[0]
-    case len(domainParts) == 3:
+    case len(domainParts) == 4:
       dotBitSubdomain = domainParts[0]
       dotBitDomain = domainParts[1]
     default:
@@ -58,7 +66,8 @@ func getRpcRequest(dotBitDomain string) *http.Request {
   return req
 }
 
-func getDotBitRecord(resp *http.Response) stringMap{
+func getDotBitRecord(resp *http.Response) (rpcResponse, stringMap) {
+  fmt.Println(resp)
   body, _ := ioutil.ReadAll(resp.Body)
   var data rpcResponse
   _ = json.Unmarshal(body, &data)
@@ -68,9 +77,8 @@ func getDotBitRecord(resp *http.Response) stringMap{
   if len(data.Result) > 0 {
   _ = json.Unmarshal([]byte(data.Result[0]["value"]), &dotBitRecord)
   }
-  fmt.Println(data)
 
-  return dotBitRecord
+  return data, dotBitRecord
 }
 
 func getRedirectIp(dotBitRecord stringMap, dotBitSubdomain string) string {
@@ -79,7 +87,7 @@ func getRedirectIp(dotBitRecord stringMap, dotBitSubdomain string) string {
   switch {
   case dotBitSubdomain == "" && hasKey(dotBitRecord, "ip"):
     redirectIp = dotBitRecord["ip"]
-  case dotBitSubdomain != "" && hasKey(dotBitRecord, "map"):
+  case hasKey(dotBitRecord, "map"):
     redirectIp = getIpFromMap(dotBitRecord["map"], dotBitSubdomain)
   case hasKey(dotBitRecord, "ns"):
 //    nameservers := dotBitRecord["ns"]
@@ -93,13 +101,12 @@ func getIpFromMap(mapVal string, subdomain string) string {
   var m stringMap
   _ = json.Unmarshal([]byte(mapVal), &m)
   var ip string
+  fmt.Println(m, subdomain)
   switch {
   case hasKey(m, subdomain):
     ip = m[subdomain]
   case hasKey(m, "*"):
     ip = m["*"]
-  default:
-    ip = ""
   }
   return ip
 }
